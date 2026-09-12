@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Budget App (Multi-Category)</title>
+
+<!-- Load Chart.js from CDN (works online) -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        max-width: 600px;
+        margin: 40px auto;
+        padding: 20px;
+        background: #f4f4f4;
+        border-radius: 10px;
+    }
+
+    input, button {
+        width: 100%;
+        padding: 12px;
+        margin-top: 10px;
+        border-radius: 6px;
+        border: 1px solid #ccc;
+    }
+
+    .category-box {
+        background: white;
+        padding: 10px;
+        margin-top: 10px;
+        border-radius: 6px;
+    }
+
+    #status {
+        margin-top: 20px;
+        padding: 15px;
+        border-radius: 6px;
+        font-weight: bold;
+    }
+</style>
+</head>
+
+<body>
+
+<h2>Monthly Budget App</h2>
+
+<label>Monthly Budget ($):</label>
+<input type="number" id="budget" placeholder="Enter your monthly budget">
+
+<h3>Enter Expenses for Each Category</h3>
+
+<div class="category-box">
+    <label>Food:</label>
+    <input type="number" id="food">
+
+    <label>Rent:</label>
+    <input type="number" id="rent">
+
+    <label>Transportation:</label>
+    <input type="number" id="transport">
+
+    <label>Entertainment:</label>
+    <input type="number" id="entertainment">
+
+    <label>Shopping:</label>
+    <input type="number" id="shopping">
+
+    <label>Other:</label>
+    <input type="number" id="other">
+</div>
+
+<button onclick="addAllExpenses()">Add All Expenses</button>
+<button onclick="resetMonth()" style="background:#dc3545;color:white;">Reset Month</button>
+
+<h3>Total Spent: $<span id="total">0</span></h3>
+<div id="status"></div>
+
+<h3>Spending by Category</h3>
+<canvas id="categoryChart"></canvas>
+
+<script>
+    let expenses = JSON.parse(localStorage.getItem("expenses")) || {};
+    let budget = Number(localStorage.getItem("budget")) || 0;
+
+    const categories = ["Food", "Rent", "Transportation", "Entertainment", "Shopping", "Other"];
+
+    // Initialize missing categories
+    categories.forEach(cat => {
+        if (!expenses[cat]) expenses[cat] = 0;
+    });
+
+    document.getElementById("budget").value = budget;
+
+    function addAllExpenses() {
+        budget = Number(document.getElementById("budget").value);
+        if (!budget) {
+            alert("Enter your monthly budget first.");
+            return;
+        }
+
+        const inputs = {
+            Food: Number(document.getElementById("food").value) || 0,
+            Rent: Number(document.getElementById("rent").value) || 0,
+            Transportation: Number(document.getElementById("transport").value) || 0,
+            Entertainment: Number(document.getElementById("entertainment").value) || 0,
+            Shopping: Number(document.getElementById("shopping").value) || 0,
+            Other: Number(document.getElementById("other").value) || 0
+        };
+
+        for (let cat in inputs) {
+            expenses[cat] += inputs[cat];
+        }
+
+        localStorage.setItem("expenses", JSON.stringify(expenses));
+        localStorage.setItem("budget", budget);
+
+        updateUI();
+    }
+
+    function updateUI() {
+        const totalSpent = Object.values(expenses).reduce((a, b) => a + b, 0);
+        document.getElementById("total").innerText = totalSpent;
+
+        const statusBox = document.getElementById("status");
+
+        if (totalSpent < budget * 0.75) {
+            statusBox.style.background = "#d4f8d4";
+            statusBox.innerText = "You're doing great!";
+        } else if (totalSpent < budget) {
+            statusBox.style.background = "#fff3cd";
+            statusBox.innerText = "Careful — you're getting close.";
+        } else {
+            statusBox.style.background = "#f8d7da";
+            statusBox.innerText = "Warning! You've exceeded your budget.";
+        }
+
+        renderChart();
+    }
+
+    function renderChart() {
+        const ctx = document.getElementById("categoryChart").getContext("2d");
+
+        if (window.categoryChart) window.categoryChart.destroy();
+
+        window.categoryChart = new Chart(ctx, {
+            type: "pie",
+            data: {
+                labels: categories,
+                datasets: [{
+                    data: categories.map(cat => expenses[cat]),
+                    backgroundColor: ["#007bff", "#28a745", "#ffc107", "#dc3545", "#17a2b8", "#6f42c1"]
+                }]
+            }
+        });
+    }
+
+    function resetMonth() {
+        if (!confirm("Reset all expenses?")) return;
+
+        expenses = {};
+        categories.forEach(cat => expenses[cat] = 0);
+
+        localStorage.setItem("expenses", JSON.stringify(expenses));
+        updateUI();
+    }
+
+    updateUI();
+</script>
+
+</body>
+</html>
