@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <title>Budget App (Multi-Category)</title>
 
-<!-- Load Chart.js from CDN (works online) -->
+<!-- Load Chart.js from CDN -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
@@ -85,7 +85,6 @@
 
     const categories = ["Food", "Rent", "Transportation", "Entertainment", "Shopping", "Other"];
 
-    // Initialize missing categories
     categories.forEach(cat => {
         if (!expenses[cat]) expenses[cat] = 0;
     });
