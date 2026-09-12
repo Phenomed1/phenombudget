@@ -166,6 +166,11 @@
 
     updateUI();
 </script>
+<script>
+    let expenses = JSON.parse(localStorage.getItem("expenses")) || {};
+    ...
+    updateUI();
+</script>
 
 </body>
 </html>
